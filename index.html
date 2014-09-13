@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>HTML5 Compass</title>
+<style>
+	.compass{width:321px; height:320px; position:absolute; left:100px; top:100px;}
+	#myCanvas{}
+	.rotator{width:20px; height:20px; position:absolute; left:10px; top:160px;  background: url(dot.png) no-repeat;cursor: pointer;}
+	.changeA{width:20px; height:20px; position:absolute; left:295px; top:110px; background: url(dot.png) no-repeat;cursor: pointer;}
+</style>
+<script type="text/javascript" src="jquery-1.9.1.js"></script>
+<script type="text/javascript" src="jquery-ui-1.10.3.custom.min.js"></script>
+<script>
+ 
+$(document).ready(function(){
+    initPage();
+})
+var canvas;
+	var context;
+	var offsetC,offsetR;
+	var rX,rY,aX,aY;
+	var cX = 160, cY = 160;
+	var imgX = cX-107, imgY = cY-106;
+ 
+	var lineX,lineY,line1X,line1Y;
+ 
+	var lineAngle=0;
+ 
+	var angle=180;
+	var compass,compass1;
+	var rDirection= true;
+ 
+	function getAngle(){
+		offsetC = $(canvas).position();
+		offsetR = $('.rotator').position();//rotator
+		offsetA = $('.changeA').position();//angle changer
+ 
+		var x1 = offsetC.left;
+		var y1 = offsetC.top;
+ 
+		var x2 = offsetR.left;
+		var y2 = offsetR.top;
+ 
+		var x3 = offsetA.left;
+		var y3 = offsetA.top;
+ 
+		rX = x2 - x1 + 10;
+		rY = y2 - y1 + 10;
+		lineX = rX;
+		lineY = rY;
+ 
+		lineAngle = (Math.atan2((rY-cY),(rX-cX))*180/Math.PI)-180;
+		aX = x3 - x1 + 10;
+		aY = y3 - y1 + 10;
+		line1X = aX;
+		line1Y = aY;
+		line1Angle = (Math.atan2((aY-cY),(aX-cX))*180/Math.PI)-180;
+		angle = Math.round(360 + line1Angle - lineAngle);
+		if(angle>360){angle-=360;}
+ 
+		draw();
+ 
+ 
+	}
+ 
+	function draw(){
+		context.clearRect(0,0,320,320);
+ 
+		context.save();
+		context.translate(cX,cY);
+		context.rotate(lineAngle*Math.PI/180);
+		context.translate(-cX,-cY);
+		if(angle<=180){
+			context.drawImage(compass,imgX,imgY);
+		}else{
+			context.translate(0, 321);
+			context.scale(1, -1);
+			context.drawImage(compass,imgX,imgY);
+		}
+		context.restore();
+ 
+		context.save();
+		context.beginPath();
+		context.moveTo(cX,cY);
+		context.lineTo(lineX,lineY);
+		context.stroke();
+		context.restore();
+ 
+		context.save();
+		context.beginPath();
+		context.moveTo(cX,cY);
+		context.lineTo(line1X,line1Y);
+		context.stroke();
+		context.restore();
+ 
+		context.save();
+		context.translate(cX,cY);
+		context.rotate(lineAngle*Math.PI/180);
+		context.translate(-cX,-cY);
+		context.beginPath();
+		if(angle<=180){
+			rDirection =false;
+		}else{
+			rDirection =true;
+		}
+		context.arc(cX,cY,50,1*Math.PI,(angle+180)*Math.PI/180,rDirection);
+		context.stroke();
+		context.restore();
+ 
+		context.font="16px Arial";
+		if(angle>180){
+			context.fillText(360-angle,150,200);
+		}else{
+			context.fillText(angle,150,200);
+		}
+ 
+	}
+ 
+ 
+function initPage()
+{
+	var compassDragC=0;
+	//$('.compass').addTouch();
+	 $('.compass').draggable({
+			drag: function(event,ui){
+				getAngle();
+			},
+			stop:function(event,ui){
+				if(compassDragC==0){
+					compassDragC++;
+				}
+			}
+		});
+		//$('.rotator').addTouch();
+ 
+		//$('.changeA').addTouch();
+		$('.changeA,.rotator').draggable({
+			containment: "parent",
+			drag: function(event,ui){
+				getAngle();
+			},
+			stop: function(event,ui){
+				getAngle();
+			}
+		});
+ 
+		compass = document.getElementById('compass');
+		canvas = document.getElementById('myCanvas');
+		context = canvas.getContext('2d');
+		offsetC = $(canvas).offset();
+		setTimeout(getAngle,100);
+}
+ 
+ 
+</script>
+</head>
+ 
+<body>
+<img src="campass.png" id="compass" style="opacity:0;">
+<div class="compass">
+    <canvas id="myCanvas" width="320" height="320"></canvas>
+    <div class="rotator"></div>
+    <div class="changeA"></div>
+</div>
+</body>
+</html>
